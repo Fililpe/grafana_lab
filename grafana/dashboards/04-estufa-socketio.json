@@ -1,0 +1,114 @@
+{
+  "uid": "cgh-estufa-socketio",
+  "title": "4. Estufa Carnivorous Green House & Socket.IO",
+  "tags": ["carnivorous-greenhouse", "loki", "socketio", "plants"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Plantas Adicionadas (15m)",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({level=\"INFO\"} |= \"added successfully\" [15m]))",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Conexões Socket.IO (15m)",
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({level=\"INFO\"} |= \"connected and joined\" [15m]))",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Acionamentos Modo de Falhas (15m)",
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({level=\"INFO\"} |= \"Error mode toggled\" [15m]))",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Falhas de Envio da Simulação (15m)",
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({level=\"ERROR\"} |= \"Failed to send data\" [15m]))",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Atividade da Estufa & Sessões em Tempo Real",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 5 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({filename=\"/tmp/app-logs/app.log\"} |~ \"connected and joined|disconnected\" [1m]))",
+          "legendFormat": "Eventos Socket.IO"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(count_over_time({filename=\"/tmp/app-logs/app.log\"} |= \"Error mode toggled\" [1m]))",
+          "legendFormat": "Toggle Modo de Falhas"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(count_over_time({level=\"ERROR\"} |= \"Failed to send data\" [1m]))",
+          "legendFormat": "Falhas Simulação Estufa"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "logs",
+      "title": "Eventos da Estufa, Plantas e Modo de Falhas",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 13 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{filename=\"/tmp/app-logs/app.log\"} |~ \"plant|Error mode|connected|Failed to send\""
+        }
+      ],
+      "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true }
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "uid": "cgh-auditoria-autenticacao",
+  "title": "3. Auditoria de Autenticação & Segurança",
+  "tags": ["carnivorous-greenhouse", "loki", "auth", "security"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Logins com Sucesso (15m)",
+      "gridPos": { "h": 5, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({level=\"INFO\"} |= \"action=\\\"login\\\"\" |= \"status=\\\"success\\\"\" [15m]))",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Credenciais Inválidas — 401 (15m)",
+      "gridPos": { "h": 5, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({level=\"WARNING\"} |= \"invalid credentials\" [15m]))",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Novos Usuários Criados (15m)",
+      "gridPos": { "h": 5, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({level=\"INFO\"} |= \"action=\\\"create\\\"\" [15m]))",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Cadastros Duplicados — 409 (15m)",
+      "gridPos": { "h": 5, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({level=\"ERROR\"} |= \"username exists\" [15m]))",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Tentativas de Autenticação no Tempo",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 5 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({level=\"INFO\"} |= \"action=\\\"login\\\"\" |= \"status=\\\"success\\\"\" [1m]))",
+          "legendFormat": "Login Sucesso"
+        },
+        {
+          "refId": "B",
+          "expr": "sum(count_over_time({level=\"WARNING\"} |= \"invalid credentials\" [1m]))",
+          "legendFormat": "Credenciais Inválidas (401)"
+        },
+        {
+          "refId": "C",
+          "expr": "sum(count_over_time({level=\"ERROR\"} |= \"action=\\\"login\\\"\" [1m]))",
+          "legendFormat": "Erro de Login (500)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "custom": { "drawStyle": "bars", "fillOpacity": 75 } }
+      }
+    },
+    {
+      "id": 6,
+      "type": "logs",
+      "title": "Auditoria de Alertas WARNING (Credenciais Inválidas)",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 13 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{level=\"WARNING\"} |= \"invalid credentials\""
+        }
+      ],
+      "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true }
+    }
+  ]
+}

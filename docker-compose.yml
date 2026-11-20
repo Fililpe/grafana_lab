@@ -76,13 +76,13 @@ services:
       - loki
 
 
-  # Serviço responsável pela visualização e análise dos dados
+  # Serviço responsável pela visualização, dashboards e alertas
   grafana:
 
     # Imagem oficial do Grafana
     image: grafana/grafana:latest
 
-    # Configurações de autenticação e acesso
+    # Configurações de autenticação, acesso e integração com Telegram
     environment:
       # Define o papel dos usuários anônimos
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
@@ -93,27 +93,21 @@ services:
       # Desabilita a autenticação básica
       - GF_AUTH_BASIC_ENABLED=false
 
+      # Credenciais do bot do Telegram (lidas do arquivo .env local)
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+
     # Disponibiliza a interface web do Grafana
     ports:
       - "3000:3000"
 
-    # Configurar o provisionamento automático da fonte de dados Loki.
-    # O shell cria o arquivo de datasource com heredoc (EOF) e depois inicia o Grafana (/run.sh).
-    entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        mkdir -p /etc/grafana/provisioning/datasources
-        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
-        apiVersion: 1
-        datasources:
-          - name: Loki
-            type: loki
-            access: proxy
-            url: http://loki:3100
-            isDefault: true
-        EOF
-        /run.sh
+    # Provisionamento automático do datasource Loki, dos 4 dashboards e dos alertas Telegram
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+
+    depends_on:
+      - loki
 
     networks:
       - loki

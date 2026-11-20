@@ -1,0 +1,21 @@
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: Telegram Monitor
+    receivers:
+      - uid: telegram_monitor_receiver
+        type: telegram
+        settings:
+          bottoken: $__env{TELEGRAM_BOT_TOKEN}
+          chatid: $__env{TELEGRAM_CHAT_ID}
+          parse_mode: HTML
+          message: |
+            <b>[Grafana Alert] {{ .Status | toUpper }}</b>
+            {{ range .Alerts }}
+            <b>Regra:</b> {{ .Labels.alertname }}
+            <b>Severidade:</b> {{ .Labels.severity }}
+            <b>Resumo:</b> {{ .Annotations.summary }}
+            <b>Detalhes:</b> {{ .Annotations.description }}
+            {{ end }}
+        disableResolveMessage: false
